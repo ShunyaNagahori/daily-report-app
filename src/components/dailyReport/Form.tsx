@@ -1,11 +1,11 @@
 'use client'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 
 type Time = {
-  startTime: string | null;
-  endTime: string | null;
+  startTime: Date | null;
+  endTime: Date | null;
   totalTime: number | null;
 };
 
@@ -15,28 +15,53 @@ const Form = () => {
   const [isBreak, setIsBreak] = useState(true);
 
   useEffect(() => {
-    if (isBreak && time.endTime !== null) {
+    if (isBreak && time.endTime !== null && time.startTime !== null) {
       setLogs(prevLogs => [...prevLogs, time]);
       setTime({ startTime: null, endTime: null, totalTime: null });
+      console.log(logs);
     }
-  }, [time, isBreak]);
+  }, [time.totalTime]);
+
+  useEffect(() => {
+    if (time.endTime !== null && time.startTime !== null) {
+      const totalTime = calculateDuration(time.startTime, time.endTime)
+      setTime(prevTime => ({ ...prevTime, totalTime }));
+      setIsBreak(true);
+    }
+  }, [time.endTime]);
 
   const handleStart = () => {
-    const startTime = new Date().toLocaleTimeString();
+    const startTime = new Date()
     setTime({startTime: startTime, endTime: null, totalTime: null});
     setIsBreak(false);
   };
 
   const handleBreak = () => {
     if (isBreak) { return; }
-    const endTime = new Date().toLocaleTimeString();
+    const endTime = new Date();
     setTime(prevTime => ({ ...prevTime, endTime }));
-    setIsBreak(true);
   };
 
-  // const calculateDuration = (startTime: string | null, endTime: string | null): string => {
+  const timeStringToNumber = (timeString: string): number => {
+    return parseInt(timeString.replace(/:/g, ''));
+  };
 
-  // };
+  const calculateDuration = (startTime: Date, endTime: Date): number => {
+    const startNum = timeStringToNumber(startTime.toLocaleTimeString());
+    const endNum = timeStringToNumber(endTime.toLocaleTimeString());
+
+    const startMinutes = Math.floor(startNum / 10000) * 60 + Math.floor((startNum % 10000) / 100);
+    const endMinutes = Math.floor(endNum / 10000) * 60 + Math.floor((endNum % 10000) / 100);
+
+    const durationInMinutes = endMinutes - startMinutes;
+    return durationInMinutes;
+  };
+
+  const showDuration = (durationInMinutes: number): string => {
+    const durationInHours = Math.floor(durationInMinutes / 60);
+    const remainingMinutes = durationInMinutes - durationInHours;
+    return durationInHours == 0 ? `${remainingMinutes}分` : `${durationInHours}時間${remainingMinutes}分`
+  }
 
   const today = () => {
     const dateObject = new Date();
@@ -58,14 +83,14 @@ const Form = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            {logs.map(log => (
-              <div className="flex justify-between border-b px-2">
-                <div key={log.endTime} className="flex w-2/3">
-                  <p className="w-1/4 text-center">{log.startTime}</p>
+            {logs.map((log, index) => (
+              <div className="flex justify-between border-b px-2" key={index}>
+                <div className="flex w-2/3">
+                  <p className="w-1/4 text-center">{log.startTime && log.startTime.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })}</p>
                   <p className="w-10 text-center">-</p>
-                  <p className="w-1/4 text-center">{log.endTime}</p>
+                  <p className="w-1/4 text-center">{log.endTime && log.endTime.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })}</p>
                 </div>
-                <p>(hoge)</p>
+                <p>（{showDuration(calculateDuration(log.startTime!, log.endTime!))}）</p>
               </div>
             ))}
           </div>
