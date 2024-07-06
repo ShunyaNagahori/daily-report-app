@@ -2,12 +2,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
-
-type Time = {
-  startTime: Date | null;
-  endTime: Date | null;
-  totalTime: number | null;
-};
+import { createLog, getAllLogs } from "@/functions/workLogs";
 
 const Form = () => {
   const [time, setTime] = useState<Time>({startTime: null, endTime: null, totalTime: null});
@@ -15,8 +10,25 @@ const Form = () => {
   const [isBreak, setIsBreak] = useState(true);
 
   useEffect(() => {
+    const fetchLogs = async () => {
+      const fetchedLogs = await getAllLogs();
+      if (fetchedLogs) {
+        setLogs(fetchedLogs);
+      }
+    };
+
+    fetchLogs();
+  }, []);
+
+
+  useEffect(() => {
     if (isBreak && time.endTime !== null && time.startTime !== null) {
+      const insertLog = async (time: Time) => {
+        await createLog(time);
+      };
+      insertLog(time);
       setLogs(prevLogs => [...prevLogs, time]);
+      // ここでD1に保存
       setTime({ startTime: null, endTime: null, totalTime: null });
       console.log(logs);
     }
@@ -90,7 +102,7 @@ const Form = () => {
                   <p className="w-10 text-center">-</p>
                   <p className="w-1/4 text-center">{log.endTime && log.endTime.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })}</p>
                 </div>
-                <p>（{showDuration(calculateDuration(log.startTime!, log.endTime!))}）</p>
+                <p>（{log.totalTime} 分）</p>
               </div>
             ))}
           </div>

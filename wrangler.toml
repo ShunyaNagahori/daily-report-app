@@ -1,0 +1,5 @@
+[[d1_databases]]
+database_name = "daily-report-db"
+binding = "DATABASE"
+database_id = "95cac1f0-8329-42fc-815f-083e700d8383"
+
