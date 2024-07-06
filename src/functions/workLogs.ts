@@ -1,6 +1,6 @@
 export const getAllLogs = async () => {
   try {
-    const response = await fetch('https://daily-report.nagahori-shunya.workers.dev/api/worklogs', { cache: 'no-store' })
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/worklogs`, { cache: 'no-store' })
     if (!response.ok) {
       throw new Error('Failed to fetch');
     }
@@ -22,7 +22,7 @@ export const getAllLogs = async () => {
 
 export const createLog = async (time: Time) => {
   try {
-    const response = await fetch('https://daily-report.nagahori-shunya.workers.dev/api/worklogs', {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/worklogs`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
